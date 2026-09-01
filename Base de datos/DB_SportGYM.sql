@@ -220,27 +220,29 @@ AS
 BEGIN
     SET NOCOUNT ON;
 
-    ;WITH Insertados AS (
-        SELECT IdVariante, SUM(Cantidad) AS CantidadNueva
+    DECLARE @Cambios TABLE (
+        IdVariante INT PRIMARY KEY,
+        Diferencia INT NOT NULL
+    );
+
+    INSERT INTO @Cambios (IdVariante, Diferencia)
+    SELECT
+        IdVariante,
+        SUM(Diferencia)
+    FROM (
+        SELECT IdVariante, Cantidad AS Diferencia
         FROM inserted
-        GROUP BY IdVariante
-    ),
-    Eliminados AS (
-        SELECT IdVariante, SUM(Cantidad) AS CantidadAnterior
+
+        UNION ALL
+
+        SELECT IdVariante, -Cantidad AS Diferencia
         FROM deleted
-        GROUP BY IdVariante
-    ),
-    Cambios AS (
-        SELECT
-            COALESCE(i.IdVariante, e.IdVariante) AS IdVariante,
-            ISNULL(i.CantidadNueva, 0) - ISNULL(e.CantidadAnterior, 0) AS Diferencia
-        FROM Insertados i
-        FULL OUTER JOIN Eliminados e
-            ON i.IdVariante = e.IdVariante
-    )
+    ) AS Movimientos
+    GROUP BY IdVariante;
+
     IF EXISTS (
         SELECT 1
-        FROM Cambios c
+        FROM @Cambios c
         INNER JOIN VarianteProducto v
             ON v.IdVariante = c.IdVariante
         WHERE c.Diferencia > v.Stock
@@ -249,28 +251,10 @@ BEGIN
         THROW 50001, 'No hay stock suficiente para realizar la operación.', 1;
     END;
 
-    ;WITH Insertados AS (
-        SELECT IdVariante, SUM(Cantidad) AS CantidadNueva
-        FROM inserted
-        GROUP BY IdVariante
-    ),
-    Eliminados AS (
-        SELECT IdVariante, SUM(Cantidad) AS CantidadAnterior
-        FROM deleted
-        GROUP BY IdVariante
-    ),
-    Cambios AS (
-        SELECT
-            COALESCE(i.IdVariante, e.IdVariante) AS IdVariante,
-            ISNULL(i.CantidadNueva, 0) - ISNULL(e.CantidadAnterior, 0) AS Diferencia
-        FROM Insertados i
-        FULL OUTER JOIN Eliminados e
-            ON i.IdVariante = e.IdVariante
-    )
     UPDATE v
     SET v.Stock = v.Stock - c.Diferencia
     FROM VarianteProducto v
-    INNER JOIN Cambios c
+    INNER JOIN @Cambios c
         ON c.IdVariante = v.IdVariante;
 END
 GO
