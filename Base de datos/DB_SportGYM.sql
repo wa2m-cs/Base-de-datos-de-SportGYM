@@ -155,7 +155,6 @@ GO
 
 CREATE TABLE Entrega (
     IdEntrega INT IDENTITY(1,1) PRIMARY KEY,
-    DireccionEntrega NVARCHAR(300) NOT NULL,
     FechaAsignacion DATETIME2 NOT NULL CONSTRAINT DF_Entrega_FechaAsignacion DEFAULT SYSDATETIME(),
     FechaEntrega DATETIME2 NULL,
     EstadoEntrega NVARCHAR(30) NOT NULL CONSTRAINT DF_Entrega_Estado DEFAULT 'Asignada',
