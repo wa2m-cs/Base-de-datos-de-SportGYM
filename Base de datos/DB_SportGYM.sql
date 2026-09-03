@@ -855,6 +855,7 @@ GO
 CREATE PROCEDURE sp_CrearPedido
     @IdCliente INT,
     @CostoEnvio DECIMAL(10,2) = 0,
+    @DireccionEntrega VARCHAR(300),
     @IdPedido INT OUTPUT
 AS
 BEGIN
@@ -863,6 +864,12 @@ BEGIN
     IF @CostoEnvio < 0
     BEGIN
         THROW 50002, 'El costo de envío no puede ser negativo.', 1;
+    END;
+
+    IF @DireccionEntrega IS NULL
+       OR LTRIM(RTRIM(@DireccionEntrega)) = ''
+    BEGIN
+        THROW 50004, 'La dirección de entrega es obligatoria.', 1;
     END;
 
     IF NOT EXISTS (
@@ -877,8 +884,16 @@ BEGIN
         THROW 50003, 'El usuario indicado no es un cliente activo.', 1;
     END;
 
-    INSERT INTO Pedido (CostoEnvio, IdCliente)
-    VALUES (@CostoEnvio, @IdCliente);
+    INSERT INTO Pedido (
+        CostoEnvio,
+        DireccionEntrega,
+        IdCliente
+    )
+    VALUES (
+        @CostoEnvio,
+        @DireccionEntrega,
+        @IdCliente
+    );
 
     SET @IdPedido = SCOPE_IDENTITY();
 END
