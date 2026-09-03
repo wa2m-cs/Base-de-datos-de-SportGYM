@@ -92,6 +92,7 @@ CREATE TABLE Pedido (
     Estado NVARCHAR(30) NOT NULL CONSTRAINT DF_Pedido_Estado DEFAULT 'Pendiente',
     Subtotal DECIMAL(10,2) NOT NULL CONSTRAINT DF_Pedido_Subtotal DEFAULT 0,
     CostoEnvio DECIMAL(10,2) NOT NULL CONSTRAINT DF_Pedido_CostoEnvio DEFAULT 0,
+   DireccionEntrega VARCHAR(300) NOT NULL,
     Total AS (Subtotal + CostoEnvio) PERSISTED,
     IdCliente INT NOT NULL,
 
