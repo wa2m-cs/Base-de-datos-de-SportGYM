@@ -31,6 +31,7 @@ CREATE TABLE Usuario (
     Correo NVARCHAR(150) NOT NULL UNIQUE,
     Contrasena NVARCHAR(255) NOT NULL, -- guardar hash, no texto plano
     Telefono NVARCHAR(25) NULL,
+   FechaNacimiento DATE NULL,
     Estado BIT NOT NULL CONSTRAINT DF_Usuario_Estado DEFAULT 1,
     FechaRegistro DATETIME2 NOT NULL CONSTRAINT DF_Usuario_FechaRegistro DEFAULT SYSDATETIME(),
     IdRol INT NOT NULL,
